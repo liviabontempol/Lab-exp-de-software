@@ -70,3 +70,7 @@ O script irá:
 
 - Implementar o código para calcular, a partir de `repositorios_populares.json`, as métricas correspondentes a cada RQ.  
 - Gerar tabelas/gráficos resumindo os resultados e responder cada RQ no relatório final.
+
+
+
+
