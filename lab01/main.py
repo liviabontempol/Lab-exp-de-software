@@ -3,7 +3,8 @@ import csv
 from datetime import datetime, timezone
 from config import ARQUIVO_CSV
 from coletor import buscar_repositorios
-from analise import analisar_resultados
+# from analise import analisar_resultados
+from visualizacao import analisar_visualizacao
 
 def salvar_csv(repositorios: list[dict]):
     """
@@ -96,14 +97,14 @@ def main():
 
         elif opcao == "2":
             print("\nLendo arquivo CSV e gerando estatísticas...")
-            analisar_resultados(ARQUIVO_CSV)
+            analisar_visualizacao(ARQUIVO_CSV)
 
         elif opcao == "3":
             print("\nIniciando execução completa...")
             dados = buscar_repositorios(1000)
             if dados:
                 salvar_csv(dados)
-                analisar_resultados(ARQUIVO_CSV)
+                analisar_visualizacao(ARQUIVO_CSV)
 
         elif opcao == "0":
             print("Encerrando programa. Até logo!")
