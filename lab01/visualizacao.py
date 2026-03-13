@@ -189,6 +189,25 @@ def _generate_chart_base64(rows: List[Dict], languages: Dict[str, int], medianas
         charts["releases"] = base64.b64encode(buffer.read()).decode()
         plt.close()
     
+    # RQ04 - histograma de tempo desde a última atualização
+    updates = _series(rows, "last_update_days")
+    if updates:
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.hist(updates, bins=30, color="#3b82f6", edgecolor="black", alpha=0.75)
+        ax.axvline(medianas.get("last_update_days", 0), color="red", linestyle="--", linewidth=2,
+                   label=f"Mediana: {medianas.get('last_update_days', 0):.0f} dias")
+        ax.set_title("RQ04 - Distribuição do Tempo Desde a Última Atualização", fontsize=14, fontweight="bold")
+        ax.set_xlabel("Dias desde a última atualização")
+        ax.set_ylabel("Frequência")
+        ax.legend()
+        ax.grid(alpha=0.3)
+        buffer = BytesIO()
+        plt.tight_layout()
+        plt.savefig(buffer, format="png", dpi=100, bbox_inches="tight")
+        buffer.seek(0)
+        charts["last_update"] = base64.b64encode(buffer.read()).decode()
+        plt.close()
+
     # RQ05 - gráfico de barras de linguagens
     if languages:
         top_langs = sorted(languages.items(), key=lambda i: i[1], reverse=True)[:10]
@@ -269,12 +288,17 @@ def _save_html(medianas: Dict[str, float], languages: Dict[str, int], total_repo
       <img src="data:image/png;base64,{charts['releases']}" alt="Gráfico RQ03">
     </div>
 """
-        
-        if "linguagens" in charts:
-            charts_html += f"""
-    <div class="chart-container">
-      <img src="data:image/png;base64,{charts['linguagens']}" alt="Gráfico RQ05">
-    </div>
+            if "last_update" in charts:
+                        charts_html += f"""
+        <div class="chart-container">
+            <img src="data:image/png;base64,{charts['last_update']}" alt="Gráfico RQ04">
+        </div>
+"""
+            if "linguagens" in charts:
+                        charts_html += f"""
+        <div class="chart-container">
+            <img src="data:image/png;base64,{charts['linguagens']}" alt="Gráfico RQ05">
+        </div>
 """
         
         if "issues" in charts:
