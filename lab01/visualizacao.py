@@ -248,6 +248,7 @@ def _save_html(medianas: Dict[str, float], languages: Dict[str, int], total_repo
 
     charts_html = ""
     if MATPLOTLIB_DISPONIVEL and charts:
+        charts_html += '<div class="charts-grid">\n'
         if "idade" in charts:
             charts_html += f"""
     <div class="chart-container">
@@ -282,6 +283,11 @@ def _save_html(medianas: Dict[str, float], languages: Dict[str, int], total_repo
       <img src="data:image/png;base64,{charts['issues']}" alt="Gráfico RQ06">
     </div>
 """
+        charts_html += "</div>\n"
+    else:
+        charts_html = """
+    <p class="charts-empty">Gráficos indisponíveis. Verifique se o matplotlib está instalado no ambiente Python ativo.</p>
+"""
 
     html = f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -289,6 +295,151 @@ def _save_html(medianas: Dict[str, float], languages: Dict[str, int], total_repo
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Análise de Repositórios Populares - GitHub</title>
+    <style>
+        :root {{
+            --bg: #f2f4f7;
+            --surface: #ffffff;
+            --text: #1b1f24;
+            --muted: #4b5563;
+            --accent: #1f3a63;
+            --border: #cbd5e1;
+        }}
+
+        * {{
+            box-sizing: border-box;
+        }}
+
+        body {{
+            margin: 0;
+            font-family: "Times New Roman", Georgia, serif;
+            color: var(--text);
+            background: var(--bg);
+            line-height: 1.5;
+        }}
+
+        .container {{
+            max-width: 1100px;
+            margin: 20px auto;
+            padding: 22px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+        }}
+
+        h1 {{
+            margin-top: 0;
+            color: #0f172a;
+            text-align: center;
+            font-size: 1.85rem;
+            letter-spacing: 0.2px;
+        }}
+
+        h2 {{
+            margin-top: 26px;
+            color: #111827;
+            border-bottom: 1px solid #94a3b8;
+            padding-bottom: 6px;
+            font-size: 1.25rem;
+        }}
+
+        .summary {{
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 14px;
+            margin-bottom: 18px;
+        }}
+
+        .badge {{
+            display: inline-block;
+            background: #eef2f7;
+            color: #1f2937;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 3px 10px;
+            font-weight: 600;
+        }}
+
+        .metric {{
+            border: 1px solid var(--border);
+            border-left: 4px solid #475569;
+            border-radius: 4px;
+            padding: 14px;
+            margin-bottom: 12px;
+            background: #fff;
+        }}
+
+        .metric-value {{
+            margin-top: 8px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e3a5f;
+        }}
+
+        .charts-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 14px;
+        }}
+
+        .chart-container {{
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: #fff;
+            padding: 10px;
+        }}
+
+        .chart-container img {{
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }}
+
+        .charts-empty {{
+            color: var(--muted);
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 12px;
+        }}
+
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }}
+
+        th,
+        td {{
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }}
+
+        th {{
+            background: #e2e8f0;
+            color: #1f2937;
+            font-weight: 700;
+        }}
+
+        tr:nth-child(even) td {{
+            background: #f8fafc;
+        }}
+
+        .footer {{
+            margin-top: 20px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.92rem;
+            text-align: center;
+        }}
+    </style>
   </head>
 <body>
   <div class="container">
