@@ -66,11 +66,94 @@ O script irá:
 - Fazer uma consulta GraphQL para buscar até **100 repositórios populares**.  
 - Salvar o resultado bruto da consulta no arquivo `repositorios_populares.json`, que será utilizado posteriormente para calcular as métricas das RQs.
 
-## Próximos passos
+## Como rodar o projeto em Python
 
-- Implementar o código para calcular, a partir de `repositorios_populares.json`, as métricas correspondentes a cada RQ.  
-- Gerar tabelas/gráficos resumindo os resultados e responder cada RQ no relatório final.
+### 1. Criar e ativar o ambiente virtual (recomendado)
+Dentro da pasta `lab01`:
 
+```bash
+python -m venv .venv
+```
 
+No PowerShell (Windows):
 
+```bash
+.venv\Scripts\Activate.ps1
+```
+
+Se aparecer erro de execução de script:
+
+```bash
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+### 2. Instalar dependências
+
+Com o ambiente virtual ativado:
+
+```bash
+pip install -r requirements.txt
+```
+
+Se não quiser usar `requirements.txt`, instale manualmente:
+
+```bash
+pip install requests python-dotenv matplotlib
+```
+
+### 3. Configurar o token do GitHub
+
+Crie (ou edite) o arquivo `.env` dentro de `lab01`:
+
+```env
+API_TOKEN=seu_token_aqui
+```
+
+Certifique-se de que o token tem permissão para ler repositórios públicos.
+
+### 4. Coletar os dados (1.000 repositórios)
+
+O fluxo principal usa os arquivos `config.py` e `coletor.py`:
+
+```bash
+python coletor.py
+```
+
+Isso irá:
+
+- Autenticar na API GraphQL do GitHub.
+- Paginar até `TOTAL_REPOS_PESQUISA` repositórios (configurado em `config.py`, padrão 1000).
+- Salvar:
+  - `repositorios_populares.json` (dados brutos).
+  - `repositorios_populares_1000.csv` (dados tabulares para análise).
+
+> Opcionalmente, para testar apenas a consulta base (100 repositórios), você pode usar `main.py` ou `teste_graphql.py`.
+
+### 5. Gerar estatísticas (medianas para as RQs)
+
+Para calcular as medianas das métricas (idade, PRs, releases, tempo desde última atualização, razão de issues fechadas e ranking de linguagens):
+
+```bash
+python analise.py
+```
+
+Isso lê o CSV definido em `ARQUIVO_CSV` no `config.py` e imprime um resumo no terminal, já organizado por RQ.
+
+### 6. Gerar gráficos e relatório HTML
+
+Para gerar visualizações e um relatório pronto em HTML:
+
+```bash
+python visualizacao.py
+```
+
+Esse comando irá:
+
+- Gerar gráficos (histogramas e gráfico de barras) para RQ01–RQ06.
+- Salvar um relatório visual em:
+  - `relatorio_visualizacao.html` (abrir no navegador).
+- Salvar um resumo em JSON:
+  - `visualizacao.json` (medianas e contagem de linguagens).
+
+Com esses passos, você executa todo o pipeline do laboratório: **coleta → análise → visualização → relatório**.
 
