@@ -1,6 +1,98 @@
-# Lab 02
+# Lab 02 - Qualidade de sistemas Java
 
-Um estudo das características de qualidade de sistemas Java (CK)
+Este laboratório investiga a relação entre métricas de processo dos repositórios Java no GitHub e métricas de qualidade interna obtidas com CK (CBO, DIT e LCOM).
+
+## RQs do laboratório
+
+- RQ01: relação entre popularidade (estrelas) e qualidade.
+- RQ02: relação entre maturidade (idade) e qualidade.
+- RQ03: relação entre atividade (releases) e qualidade.
+- RQ04: relação entre tamanho (LOC e comentários) e qualidade.
+
+## Estrutura dos scripts
+
+- `coletor_java.py`: coleta os top-1000 repositórios Java (GraphQL) e gera:
+  - `repos_java_1000.json`
+  - `repos_java_1000.csv`
+- `pipeline_qualidade.py`: clona repositórios, conta LOC/comentários, executa CK e agrega CBO/DIT/LCOM por repositório.
+- `analise_lab02.py`: calcula estatísticas descritivas, correlações (Pearson/Spearman) e gera gráficos.
+- `config.py`: centraliza configurações (token, caminho do CK, limite de repositórios etc.).
+
+## Pré-requisitos
+
+- Python 3.10+
+- Java (para executar o CK jar)
+- Git no PATH
+- Token GitHub em `.env`
+- CK jar baixado localmente
+
+Dependências Python:
+
+```powershell
+pip install requests python-dotenv matplotlib scipy
+```
+
+## Configuração
+
+1. Crie `lab02/.env`:
+
+```env
+API_TOKEN=seu_token_github
+CK_JAR_PATH=C:\caminho\para\ck-0.7.1-SNAPSHOT-jar-with-dependencies.jar
+LIMIT_REPOS=1
+```
+
+`LIMIT_REPOS`:
+- `1` para entregar Lab02S01 rapidamente (teste em 1 repositório).
+- `1000` para Lab02S02/final.
+
+2. Ajuste parâmetros opcionais em `config.py` se necessário.
+
+## Execução completa
+
+Dentro de `lab02`:
+
+### 1) Coletar lista dos repositórios Java
+
+```powershell
+python coletor_java.py
+```
+
+### 2) Rodar clone + LOC/comentários + CK + sumarização por repositório
+
+```powershell
+python pipeline_qualidade.py
+```
+
+Saída principal:
+- `repos_java_quality.csv`
+
+Esse arquivo contém, por repositório:
+- processo: `stars`, `releases_total`, `repo_age_years`, `loc`, `comment_lines`
+- qualidade CK sumarizada: `cbo_*`, `dit_*`, `lcom_*`
+- status/erro para diagnosticar falhas
+
+### 3) Rodar análise e gráficos das RQs
+
+```powershell
+python analise_lab02.py
+```
+
+Saídas:
+- `correlacoes_lab02.csv` (Pearson e Spearman por combinação processo x qualidade)
+- `grafico_<metrica_processo>_vs_<metrica_qualidade>.png`
+
+## Entrega sugerida
+
+### Lab02S01
+- `repos_java_1000.csv`
+- `repos_java_quality.csv` com `LIMIT_REPOS=1` (pelo menos 1 repositório processado)
+
+### Lab02S02 / final
+- `repos_java_quality.csv` para toda a amostra (ou o máximo possível)
+- `correlacoes_lab02.csv`
+- gráficos gerados
+- relatório final com hipóteses, metodologia, resultados e discussão
 
 ## O que você precisa fazer (visão geral)
 
