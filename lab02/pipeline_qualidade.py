@@ -2,6 +2,8 @@ import csv
 import os
 import shutil
 import subprocess
+import stat
+import time
 from statistics import mean, median
 
 from config import (
@@ -48,10 +50,29 @@ def _repo_paths(name_with_owner):
     )
 
 
+def _handle_remove_readonly(func, path, _exc_info):
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
+
+
+def _remove_dir_robusto(path, tentativas=3):
+    if not os.path.exists(path):
+        return
+    last_error = None
+    for _ in range(tentativas):
+        try:
+            shutil.rmtree(path, onerror=_handle_remove_readonly)
+            if not os.path.exists(path):
+                return
+        except Exception as e:
+            last_error = e
+        time.sleep(0.3)
+    raise RuntimeError(f"Não foi possível limpar diretório '{path}'. Feche arquivos/terminals que usem essa pasta. {last_error}")
+
+
 def _clone_repo(name_with_owner, target_dir):
     clone_url = f"https://github.com/{name_with_owner}.git"
-    if os.path.exists(target_dir):
-        shutil.rmtree(target_dir, ignore_errors=True)
+    _remove_dir_robusto(target_dir)
     subprocess.run(
         ["git", "clone", "--depth", "1", clone_url, target_dir],
         check=True,
@@ -99,8 +120,7 @@ def _count_loc_and_comments(repo_dir):
 
 
 def _run_ck(repo_dir, out_dir):
-    if os.path.exists(out_dir):
-        shutil.rmtree(out_dir, ignore_errors=True)
+    _remove_dir_robusto(out_dir)
     os.makedirs(out_dir, exist_ok=True)
 
     # Formato oficial do CK:

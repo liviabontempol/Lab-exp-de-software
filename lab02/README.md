@@ -1,30 +1,27 @@
-# Lab 02 - Qualidade de sistemas Java
+# Lab 02 - Um estudo das características de qualidade de sistemas Java
 
-Este laboratório investiga a relação entre métricas de processo dos repositórios Java no GitHub e métricas de qualidade interna obtidas com CK (CBO, DIT e LCOM).
+Este projeto responde às RQs do Lab02 relacionando métricas de processo (GitHub) com métricas de qualidade interna (CK): `CBO`, `DIT` e `LCOM`.
 
-## RQs do laboratório
+## Objetivo das RQs
 
-- RQ01: relação entre popularidade (estrelas) e qualidade.
-- RQ02: relação entre maturidade (idade) e qualidade.
-- RQ03: relação entre atividade (releases) e qualidade.
-- RQ04: relação entre tamanho (LOC e comentários) e qualidade.
+- `RQ01`: relação entre popularidade (`stars`) e qualidade.
+- `RQ02`: relação entre maturidade (`repo_age_years`) e qualidade.
+- `RQ03`: relação entre atividade (`releases_total`) e qualidade.
+- `RQ04`: relação entre tamanho (`loc`, `comment_lines`) e qualidade.
 
-## Estrutura dos scripts
+## Arquivos principais
 
-- `coletor_java.py`: coleta os top-1000 repositórios Java (GraphQL) e gera:
-  - `repos_java_1000.json`
-  - `repos_java_1000.csv`
-- `pipeline_qualidade.py`: clona repositórios, conta LOC/comentários, executa CK e agrega CBO/DIT/LCOM por repositório.
-- `analise_lab02.py`: calcula estatísticas descritivas, correlações (Pearson/Spearman) e gera gráficos.
-- `config.py`: centraliza configurações (token, caminho do CK, limite de repositórios etc.).
+- `coletor_java.py`: coleta top-1000 repositórios Java via GraphQL.
+- `pipeline_qualidade.py`: clone + métricas de tamanho + execução do CK + sumarização por repositório.
+- `analise_lab02.py`: estatísticas e correlações (Pearson/Spearman) + gráficos.
+- `config.py`: parâmetros centralizados.
 
 ## Pré-requisitos
 
 - Python 3.10+
-- Java (para executar o CK jar)
-- Git no PATH
-- Token GitHub em `.env`
-- CK jar baixado localmente
+- Git instalado e no PATH
+- Java instalado e no PATH (JDK 8+; recomendado 17+)
+- CK `.jar` baixado localmente
 
 Dependências Python:
 
@@ -32,112 +29,109 @@ Dependências Python:
 pip install requests python-dotenv matplotlib scipy
 ```
 
-## Configuração
+## Configuração de ambiente
 
-1. Crie `lab02/.env`:
+### 1) Java no Windows (obrigatório para CK)
+
+Se o terminal mostrar `java não é reconhecido`, configure:
+
+- `JAVA_HOME = C:\Program Files\Java\jdk-21.0.10`
+- no `Path`, adicione `%JAVA_HOME%\bin`
+
+Teste:
+
+```powershell
+java -version
+javac -version
+```
+
+### 2) Arquivo `.env` em `lab02`
+
+Crie/edite `lab02/.env`:
 
 ```env
 API_TOKEN=seu_token_github
-CK_JAR_PATH=C:\caminho\para\ck-0.7.1-SNAPSHOT-jar-with-dependencies.jar
+CK_JAR_PATH=C:\Users\SEU_USUARIO\Downloads\ck-0.7.1-SNAPSHOT-jar-with-dependencies.jar
 LIMIT_REPOS=1
 ```
 
-`LIMIT_REPOS`:
-- `1` para entregar Lab02S01 rapidamente (teste em 1 repositório).
-- `1000` para Lab02S02/final.
+Observações:
+- `LIMIT_REPOS=1` para Lab02S01 (teste inicial e entrega parcial).
+- `LIMIT_REPOS=1000` para Lab02S02/final.
 
-2. Ajuste parâmetros opcionais em `config.py` se necessário.
+## Como rodar (ordem correta)
 
-## Execução completa
+Entre na pasta `lab02`:
 
-Dentro de `lab02`:
+```powershell
+cd C:\Users\JOAOPEDRO\Documents\GitHub\Lab-exp-de-software\lab02
+```
 
-### 1) Coletar lista dos repositórios Java
+### Passo 1 - Coletar os 1000 repositórios Java
 
 ```powershell
 python coletor_java.py
 ```
 
-### 2) Rodar clone + LOC/comentários + CK + sumarização por repositório
+Saídas:
+- `repos_java_1000.json`
+- `repos_java_1000.csv`
+
+### Passo 2 - Rodar qualidade (clone + CK + sumarização)
 
 ```powershell
 python pipeline_qualidade.py
 ```
 
-Saída principal:
+Saída:
 - `repos_java_quality.csv`
 
-Esse arquivo contém, por repositório:
-- processo: `stars`, `releases_total`, `repo_age_years`, `loc`, `comment_lines`
-- qualidade CK sumarizada: `cbo_*`, `dit_*`, `lcom_*`
-- status/erro para diagnosticar falhas
+Esse CSV já vem sumarizado por repositório com:
+- Processo: `stars`, `releases_total`, `repo_age_years`, `loc`, `comment_lines`
+- Qualidade: `cbo_mean/median/std`, `dit_mean/median/std`, `lcom_mean/median/std`
+- Diagnóstico: `status`, `erro`
 
-### 3) Rodar análise e gráficos das RQs
+### Passo 3 - Rodar análise estatística e gráficos
 
 ```powershell
 python analise_lab02.py
 ```
 
 Saídas:
-- `correlacoes_lab02.csv` (Pearson e Spearman por combinação processo x qualidade)
+- `correlacoes_lab02.csv` (Pearson e Spearman para as combinações processo x qualidade)
 - `grafico_<metrica_processo>_vs_<metrica_qualidade>.png`
 
-## Entrega sugerida
+## Como fizemos neste projeto
+
+1. **Coleta de processo** com GraphQL do GitHub filtrando `language:Java` e ordenando por estrelas.
+2. **Paginação** para atingir o top-1000 repositórios.
+3. **Métricas de tamanho** calculadas localmente após clone (`LOC` e linhas de comentário).
+4. **Métricas de qualidade** extraídas com CK em nível de classe.
+5. **Sumarização por repositório** de `CBO`, `DIT`, `LCOM` por média, mediana e desvio.
+6. **Análise final** com correlação (Pearson/Spearman) e gráficos para responder RQ01-RQ04.
+
+## Solução de problemas comuns
+
+- **`401 Bad credentials` em `coletor_java.py`**
+  - Token inválido/expirado no `.env`. Gere um novo PAT e reinicie o terminal.
+
+- **`java não é reconhecido`**
+  - Java não está no PATH. Configure `JAVA_HOME` e `%JAVA_HOME%\bin`.
+
+- **`Nenhum repositório com status=ok` em `analise_lab02.py`**
+  - O `pipeline_qualidade.py` falhou para todos os repositórios. Verifique coluna `erro` em `repos_java_quality.csv`.
+
+- **Erro de clone: pasta já existe**
+  - Apague `clones_java` e `ck_output` e rode o pipeline novamente.
+
+## Entregáveis esperados
 
 ### Lab02S01
 - `repos_java_1000.csv`
-- `repos_java_quality.csv` com `LIMIT_REPOS=1` (pelo menos 1 repositório processado)
+- `repos_java_quality.csv` com pelo menos 1 repositório com `status=ok`
 
-### Lab02S02 / final
-- `repos_java_quality.csv` para toda a amostra (ou o máximo possível)
+### Lab02S02 / Final
+- `repos_java_quality.csv` (amostra completa ou máxima possível)
 - `correlacoes_lab02.csv`
-- gráficos gerados
+- gráficos `grafico_*.png`
 - relatório final com hipóteses, metodologia, resultados e discussão
-
-## O que você precisa fazer (visão geral)
-
-### Lab02S01 (começo)
-1. Coletar a lista dos 1.000 repositórios Java mais populares do GitHub.
-2. Automatizar clone + coleta de métricas de qualidade (CK) e métricas de tamanho (LOC/Comentários).
-+   Por enquanto, neste sprint você precisa gerar o CSV de **pelo menos 1 repositório**.
-
-### Lab02S02 (continuação)
-1. Rodar a coleta (clone + CK) para todos os 1.000 repositórios.
-2. Analisar correlação com as RQs e escrever o relatório final.
-
-## Como coletar a lista dos 1.000 repositórios Java
-
-O script `coletor_java.py` reaproveita a lógica de busca/paginação GraphQL criada no `lab01`.
-
-1. Entre na pasta `lab02`:
-
-```powershell
-cd C:\Users\JOAOPEDRO\Documents\GitHub\Lab-exp-de-software\lab02
-```
-
-2. Crie um arquivo `.env` com:
-
-```env
-API_TOKEN=seu_token_aqui
-```
-
-3. Rode:
-
-```powershell
-python coletor_java.py
-```
-
-4. Ele vai gerar:
-
-- `repos_java_1000.json` (dados brutos)
-- `repos_java_1000.csv` (tabela com `stars`, `releases_total`, `repo_age_years`, etc.)
-
-> Arquivos gerados servem de base para as métricas de popularidade, maturidade e atividade (as de “processo”).
-
-## Próximo passo (antes de rodar CK)
-
-Para completar o Lab02S01, me diga qual forma/instância do CK você vai usar (por exemplo, arquivo `.jar` do CK e o comando exato para gerar métricas CBO/DIT/LCOM).
-Com isso eu monto o script de:
-1. clonar 1 repositório (dado o `url` do CSV),
-2. contar LOC/comentários,
-3. executar o CK e consolidar `CBO`, `DIT`, `LCOM` em um CSV final para 1 repositório.
