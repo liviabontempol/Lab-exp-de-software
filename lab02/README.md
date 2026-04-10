@@ -23,10 +23,41 @@ Este projeto responde às RQs do Lab02 relacionando métricas de processo (GitHu
 - Java instalado e no PATH (JDK 8+; recomendado 17+)
 - CK `.jar` baixado localmente
 
-Dependências Python:
+### Ambiente virtual Python (recomendado)
+
+Na pasta do projeto (ou na raiz do repositório), crie e ative o `.venv` para isolar as dependências.
+
+**Criar o ambiente virtual** (uma vez):
+
+```powershell
+cd C:\Users\JOAOPEDRO\Documents\GitHub\Lab-exp-de-software\lab02
+python -m venv .venv
+```
+
+**Ativar no PowerShell (Windows):**
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+Se aparecer erro de política de execução:
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+Depois de ativar, o prompt deve mostrar `(`.venv`)` no início da linha.
+
+**Instalar dependências** (com o venv ativado):
 
 ```powershell
 pip install requests python-dotenv matplotlib scipy
+```
+
+**Sair do ambiente virtual** (quando terminar):
+
+```powershell
+deactivate
 ```
 
 ## Configuração de ambiente
@@ -51,9 +82,17 @@ Crie/edite `lab02/.env`:
 
 ```env
 API_TOKEN=seu_token_github
-CK_JAR_PATH=C:\Users\SEU_USUARIO\Downloads\ck-0.7.1-SNAPSHOT-jar-with-dependencies.jar
+CK_JAR_PATH=C:\Users\SEU_USUARIO\Desktop\ck-master\target\ck-0.7.1-SNAPSHOT-jar-with-dependencies.jar
 LIMIT_REPOS=1
 ```
+
+**Importante — qual JAR do CK usar**
+
+Após `mvn clean package` no repositório do CK, na pasta `target/` existem vários `.jar`. O único que serve para `java -jar` é o **fat jar** cujo nome termina em **`jar-with-dependencies.jar`**.
+
+- **Não use** `ck-*-javadoc.jar` (erro: `no main manifest attribute`).
+- **Não use** `ck-*-sources.jar`.
+- **Use** `ck-*-jar-with-dependencies.jar` (ex.: `ck-0.7.1-SNAPSHOT-jar-with-dependencies.jar`).
 
 Observações:
 - `LIMIT_REPOS=1` para Lab02S01 (teste inicial e entrega parcial).
@@ -61,10 +100,11 @@ Observações:
 
 ## Como rodar (ordem correta)
 
-Entre na pasta `lab02`:
+Entre na pasta `lab02` e **ative o ambiente virtual** (`.venv`) conforme a seção acima.
 
 ```powershell
 cd C:\Users\JOAOPEDRO\Documents\GitHub\Lab-exp-de-software\lab02
+.venv\Scripts\Activate.ps1
 ```
 
 ### Passo 1 - Coletar os 1000 repositórios Java
@@ -112,6 +152,10 @@ Saídas:
 
 ## Solução de problemas comuns
 
+- **`Colunas CBO/DIT/LCOM não encontradas` ou `class.csv sem linhas`**
+  - O primeiro repositório da lista (`Snailclimb/JavaGuide`) é em grande parte **conteúdo de estudo** (Markdown etc.), com **pouco ou nenhum código Java** analisável. O CK pode gerar `class.csv` só com cabeçalho.
+  - **Solução**: no `.env`, use `LIMIT_REPOS=1` mas **pule manualmente** esse repo alterando o `repos_java_1000.csv` (remova a primeira linha de dados) **ou** aumente `LIMIT_REPOS` e processe vários até achar um com Java real; ou edite o CSV para colocar no topo um projeto Maven/Gradle com `src/main/java`.
+
 - **`401 Bad credentials` em `coletor_java.py`**
   - Token inválido/expirado no `.env`. Gere um novo PAT e reinicie o terminal.
 
@@ -123,6 +167,14 @@ Saídas:
 
 - **Erro de clone: pasta já existe**
   - Apague `clones_java` e `ck_output` e rode o pipeline novamente.
+
+- **`Filename too long` / `unable to create file ...` no clone (Windows)**
+  - Repositórios grandes (ex.: Spring Boot) têm caminhos muito longos. O script já usa `git -c core.longpaths=true clone`.
+  - Se ainda falhar, rode uma vez no seu usuário:
+    ```powershell
+    git config --global core.longpaths true
+    ```
+  - No Windows 10/11, em **Política de grupo** ou **Editor de Registro**, também existe a opção “Habilitar caminhos longos” (opcional).
 
 ## Entregáveis esperados
 
