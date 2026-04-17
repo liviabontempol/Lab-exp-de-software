@@ -6,6 +6,7 @@ from scipy.stats import pearsonr, spearmanr
 
 ARQUIVO_CSV = "repos_java_quality.csv"
 REPO_DESTAQUE = "Snailclimb/JavaGuide"
+OUTPUT_DIR = "graficos"
 
 LABELS = {
     "estrelas": "Popularidade (estrelas)",
@@ -141,6 +142,15 @@ def encontrar_repo(rows, nome_repo):
     return None
 
 
+def salvar_png(nome_arquivo):
+    """Salva a figura atual como PNG na pasta OUTPUT_DIR e fecha."""
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    caminho = os.path.join(OUTPUT_DIR, nome_arquivo)
+    plt.savefig(caminho, format="png", dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"Gráfico salvo: {caminho}")
+
+
 def mostrar_estatisticas(rows):
     print(f"\nTotal de repositórios válidos: {len(rows)}")
 
@@ -185,7 +195,9 @@ def grafico_barras_repo(repo):
     plt.ylabel("Valor")
     plt.xticks(rotation=20, ha="right")
     plt.tight_layout()
-    plt.show()
+
+    nome_repo_seguro = repo["nome"].replace("/", "_")
+    salvar_png(f"barras_{nome_repo_seguro}.png")
 
 
 def histograma(rows, coluna, repo_destaque=None):
@@ -210,7 +222,7 @@ def histograma(rows, coluna, repo_destaque=None):
         )
 
     plt.tight_layout()
-    plt.show()
+    salvar_png(f"histograma_{coluna}.png")
 
 
 def boxplot(rows, coluna, repo_destaque=None):
@@ -227,7 +239,7 @@ def boxplot(rows, coluna, repo_destaque=None):
         plt.axvline(repo_destaque[coluna], linestyle="--", linewidth=2)
 
     plt.tight_layout()
-    plt.show()
+    salvar_png(f"boxplot_{coluna}.png")
 
 
 def dispersao(rows, x_key, y_key, repo_destaque=None):
@@ -260,7 +272,7 @@ def dispersao(rows, x_key, y_key, repo_destaque=None):
     plt.xlabel(LABELS.get(x_key, x_key))
     plt.ylabel(LABELS.get(y_key, y_key))
     plt.tight_layout()
-    plt.show()
+    salvar_png(f"dispersao_{x_key}_vs_{y_key}.png")
 
 
 def main():
