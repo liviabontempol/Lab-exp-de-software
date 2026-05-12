@@ -8,6 +8,9 @@ python -m venv .venv
 ### Ativação do ambiente virtual:
 .venv\Scripts\Activate.ps1
 
+## Se der erro rodar:
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
 ### Instalação das dependências:
 pip3 install requests (biblioteca requests)
 pip3 install numpy
