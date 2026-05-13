@@ -1,0 +1,2 @@
+repo,url,stars,releases_total,repo_age_years,java_files,loc_total,comment_lines,classes_analyzed,cbo_mean,cbo_median,cbo_stddev,dit_mean,dit_median,dit_stddev,lcom_mean,lcom_median,lcom_stddev
+krahets/hello-algo,https://github.com/krahets/hello-algo,125036,10,3.4328767123287673,425,28705,8665,215,1.8744186046511628,2.0,1.512578571876796,1.0,1.0,0.0,0.06953921376744186,0.0,0.17682754316333768
