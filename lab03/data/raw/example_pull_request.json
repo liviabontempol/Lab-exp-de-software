@@ -1,0 +1,40 @@
+{
+  "repository": "XProger/OpenLara",
+  "repository_url": "https://github.com/XProger/OpenLara",
+  "pr_number": 435,
+  "pr_url": "https://github.com/XProger/OpenLara/pull/435",
+  "pr_state": "MERGED",
+  "created_at": "2022-08-06T12:16:12Z",
+  "merged_at": "2022-08-06T17:41:12Z",
+  "closed_at": "2022-08-06T17:41:12Z",
+  "tamanho_dos_prs": {
+    "additions": 137,
+    "deletions": 21,
+    "changed_files": 1,
+    "total_changes": 158
+  },
+  "tempo_de_analise_dos_prs": {
+    "seconds": 19500,
+    "hours": 5.42
+  },
+  "interacoes_nos_prs": {
+    "issue_comments": 5,
+    "review_comments": 1,
+    "review_threads": 1,
+    "reviews": 1,
+    "total_interactions": 8
+  },
+  "descricao_dos_prs": {
+    "title": "Update \"pl.h\".",
+    "body": "Added missing strings and updated Polish translation.",
+    "body_length": 53
+  },
+  "numero_de_revisoes_realizadas": 1,
+  "feedback_final_das_revisoes": {
+    "final_state": "COMMENTED",
+    "states_seen": [
+      "COMMENTED"
+    ],
+    "last_review_submitted_at": "2022-08-06T13:43:04Z"
+  }
+}

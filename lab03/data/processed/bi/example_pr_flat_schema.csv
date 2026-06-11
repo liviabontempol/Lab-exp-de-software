@@ -1,0 +1,2 @@
+repository,pr_number,pr_state,created_at,merged_at,closed_at,additions,deletions,changed_files,total_changes,review_duration_hours,issue_comments,review_comments,review_threads,reviews,total_interactions,title,body_length,final_review_state
+XProger/OpenLara,435,MERGED,2022-08-06T12:16:12Z,2022-08-06T17:41:12Z,2022-08-06T17:41:12Z,137,21,1,158,5.42,5,1,1,1,8,"Update ""pl.h"".",53,COMMENTED

@@ -39,6 +39,16 @@ def get_settings() -> Settings:
     base_dir = Path(__file__).resolve().parents[1]
     data_raw_dir = base_dir / "data" / "raw"
 
+    def _env_int(name: str, default: int) -> int:
+        value = os.getenv(name)
+        if value is None:
+            return default
+        try:
+            parsed = int(value)
+        except ValueError:
+            return default
+        return parsed if parsed > 0 else default
+
     return Settings(
         github_token=token,
         base_dir=base_dir,
@@ -48,7 +58,7 @@ def get_settings() -> Settings:
         target_repo_count=200,
         min_pr_count=100,
         languages=["TypeScript", "Python", "JavaScript", "Java", "C#"],
-        search_page_size=50,
-        pr_page_size=100,
-        rate_limit_threshold=10,
+        search_page_size=_env_int("SEARCH_PAGE_SIZE", 50),
+        pr_page_size=_env_int("PR_PAGE_SIZE", 30),
+        rate_limit_threshold=_env_int("RATE_LIMIT_THRESHOLD", 10),
     )

@@ -29,6 +29,9 @@ query($query: String!, $first: Int!, $after: String) {
 PULL_REQUESTS_QUERY = """
 query($owner: String!, $name: String!, $first: Int!, $after: String) {
   repository(owner: $owner, name: $name) {
+    name
+    url
+    owner { login }
     pullRequests(states: [MERGED, CLOSED], first: $first, after: $after, orderBy: {field: CREATED_AT, direction: DESC}) {
       pageInfo {
         hasNextPage
@@ -43,10 +46,19 @@ query($owner: String!, $name: String!, $first: Int!, $after: String) {
         changedFiles
         additions
         deletions
-        bodyText
+        title
+        body
         participants { totalCount }
         comments { totalCount }
-        reviews { totalCount }
+        reviewThreads { totalCount }
+        reviews(first: 50) {
+          totalCount
+          nodes {
+            state
+            submittedAt
+            author { login }
+          }
+        }
       }
     }
   }

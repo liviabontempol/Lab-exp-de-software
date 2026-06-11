@@ -78,6 +78,30 @@ python lab03/scripts/run_all.py
 - `lab03/data/raw/repositories.csv`
 - `lab03/data/raw/pull_requests.csv`
 
+## Lab 04 - Dashboard BI
+
+Para preparar os dados para Power BI/Tableau/Looker Studio:
+
+```
+python lab03/scripts/prepare_bi_dashboard.py
+```
+
+Arquivos gerados em `lab03/data/processed/bi`:
+
+- `fact_repositories.csv`
+- `kpi_repositories.csv`
+- `dataset_characterization_by_language.csv`
+- `fact_pull_requests.csv` (quando `pull_requests.csv` existir)
+- `kpi_pull_requests.csv`
+- `rq_review_time_by_language.csv`
+- `rq_size_vs_review_time.csv`
+- `rq_interactions_by_feedback.csv`
+- `rq_time_series_monthly.csv`
+
+Guia completo do laboratorio de BI:
+
+- `lab03/docs/LAB04_DASHBOARD_BI.md`
+
 ## Próximos laboratórios
 
 A estrutura foi desenhada para facilitar:

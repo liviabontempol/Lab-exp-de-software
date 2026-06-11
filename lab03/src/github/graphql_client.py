@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import logging
+import random
 import time
 from typing import Any
 
@@ -19,32 +20,68 @@ class GithubGraphQLClient:
         self._settings = settings
         self._logger = logging.getLogger(self.__class__.__name__)
         self._endpoint = "https://api.github.com/graphql"
+        self._max_retries = 5
+        self._retry_backoff = 2
 
     def execute(self, query: str, variables: dict[str, Any]) -> dict[str, Any]:
-        """Execute a GraphQL query with basic error handling."""
+        """Execute a GraphQL query with retry logic for transient errors."""
 
-        response = requests.post(
-            self._endpoint,
-            json={"query": query, "variables": variables},
-            headers={
-                "Authorization": f"Bearer {self._settings.github_token}",
-                "Accept": "application/vnd.github+json",
-            },
-            timeout=60,
-        )
+        for attempt in range(self._max_retries):
+            try:
+                response = requests.post(
+                    self._endpoint,
+                    json={"query": query, "variables": variables},
+                    headers={
+                        "Authorization": f"Bearer {self._settings.github_token}",
+                        "Accept": "application/vnd.github+json",
+                    },
+                    timeout=60,
+                )
 
-        if response.status_code != 200:
-            raise RuntimeError(
-                f"GitHub API error: {response.status_code} - {response.text}"
-            )
+                if response.status_code >= 500:
+                    if attempt < self._max_retries - 1:
+                        wait_seconds = self._retry_backoff ** attempt + random.uniform(0, 1)
+                        self._logger.warning(
+                            "GitHub API error %s (attempt %d/%d). Retrying in %.1f seconds...",
+                            response.status_code,
+                            attempt + 1,
+                            self._max_retries,
+                            wait_seconds,
+                        )
+                        time.sleep(wait_seconds)
+                        continue
+                    raise RuntimeError(
+                        f"GitHub API error: {response.status_code} - {response.text}"
+                    )
 
-        payload = response.json()
-        if payload.get("errors"):
-            raise RuntimeError(f"GraphQL errors: {payload['errors']}")
+                if response.status_code != 200:
+                    raise RuntimeError(
+                        f"GitHub API error: {response.status_code} - {response.text}"
+                    )
+                payload = response.json()
+                if payload.get("errors"):
+                    raise RuntimeError(f"GraphQL errors: {payload['errors']}")
 
-        data = payload.get("data") or {}
-        self._handle_rate_limit(data.get("rateLimit"))
-        return data
+                data = payload.get("data") or {}
+                self._handle_rate_limit(data.get("rateLimit"))
+                return data
+
+            except requests.RequestException as e:
+                if attempt < self._max_retries - 1:
+                    wait_seconds = self._retry_backoff ** attempt + random.uniform(0, 1)
+                    self._logger.warning(
+                        "Request failed: %s (attempt %d/%d). Retrying in %.1f seconds...",
+                        e,
+                        attempt + 1,
+                        self._max_retries,
+                        wait_seconds,
+                    )
+                    time.sleep(wait_seconds)
+                else:
+                    raise
+
+        raise RuntimeError(f"Failed after {self._max_retries} retries")
+
 
     def _handle_rate_limit(self, rate_limit: dict[str, Any] | None) -> None:
         if not rate_limit:
