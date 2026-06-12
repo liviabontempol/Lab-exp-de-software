@@ -1,0 +1,50 @@
+{
+  "Arquivos modificados": {
+    "mannwhitneyu_stat": 4752965154.0,
+    "p_value": 3.866429567208277e-21,
+    "cohens_d": -0.056626572184524285,
+    "effect_size_interpretation": "pequeno"
+  },
+  "Linhas adicionadas": {
+    "mannwhitneyu_stat": 4107191525.0,
+    "p_value": 0.0,
+    "cohens_d": -0.08477433976378862,
+    "effect_size_interpretation": "pequeno"
+  },
+  "Linhas removidas": {
+    "mannwhitneyu_stat": 5428435566.0,
+    "p_value": 0.0,
+    "cohens_d": -0.017346655585138444,
+    "effect_size_interpretation": "pequeno"
+  },
+  "Total de mudancas": {
+    "mannwhitneyu_stat": 4316933754.5,
+    "p_value": 4.1429614334180145e-117,
+    "cohens_d": -0.06515167855171415,
+    "effect_size_interpretation": "pequeno"
+  },
+  "Tempo de analise (h)": {
+    "mannwhitneyu_stat": 2455161076.0,
+    "p_value": 0.0,
+    "cohens_d": -0.5748789613279973,
+    "effect_size_interpretation": "grande"
+  },
+  "Comprimento descricao": {
+    "mannwhitneyu_stat": 3309650041.0,
+    "p_value": 0.0,
+    "cohens_d": -0.2346416083316816,
+    "effect_size_interpretation": "medio"
+  },
+  "Numero de reviews": {
+    "mannwhitneyu_stat": 4947213439.5,
+    "p_value": 5.557688780690252e-135,
+    "cohens_d": 0.02623004155879926,
+    "effect_size_interpretation": "pequeno"
+  },
+  "Numero comentarios": {
+    "mannwhitneyu_stat": 3249743767.5,
+    "p_value": 0.0,
+    "cohens_d": -0.2712758225201017,
+    "effect_size_interpretation": "medio"
+  }
+}

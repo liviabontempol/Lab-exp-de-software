@@ -1,0 +1,98 @@
+{
+  "Arquivos modificados": {
+    "vs_status_merged": {
+      "r": 0.0193,
+      "p": 0.0,
+      "significante": true
+    },
+    "vs_num_reviews": {
+      "r": 0.2877,
+      "p": 0.0,
+      "significante": true
+    }
+  },
+  "Linhas adicionadas": {
+    "vs_status_merged": {
+      "r": -0.0788,
+      "p": 0.0,
+      "significante": true
+    },
+    "vs_num_reviews": {
+      "r": 0.3464,
+      "p": 0.0,
+      "significante": true
+    }
+  },
+  "Linhas removidas": {
+    "vs_status_merged": {
+      "r": 0.1211,
+      "p": 0.0,
+      "significante": true
+    },
+    "vs_num_reviews": {
+      "r": 0.2026,
+      "p": 0.0,
+      "significante": true
+    }
+  },
+  "Total de mudancas": {
+    "vs_status_merged": {
+      "r": -0.0471,
+      "p": 0.0,
+      "significante": true
+    },
+    "vs_num_reviews": {
+      "r": 0.3359,
+      "p": 0.0,
+      "significante": true
+    }
+  },
+  "Tempo de analise (horas)": {
+    "vs_status_merged": {
+      "r": -0.3279,
+      "p": 0.0,
+      "significante": true
+    },
+    "vs_num_reviews": {
+      "r": 0.1938,
+      "p": 0.0,
+      "significante": true
+    }
+  },
+  "Comprimento descricao": {
+    "vs_status_merged": {
+      "r": -0.199,
+      "p": 0.0,
+      "significante": true
+    },
+    "vs_num_reviews": {
+      "r": 0.1168,
+      "p": 0.0,
+      "significante": true
+    }
+  },
+  "Reviews": {
+    "vs_status_merged": {
+      "r": 0.0506,
+      "p": 0.0,
+      "significante": true
+    },
+    "vs_num_reviews": {
+      "r": 1.0,
+      "p": 0.0,
+      "significante": true
+    }
+  },
+  "Comentarios": {
+    "vs_status_merged": {
+      "r": -0.2097,
+      "p": 0.0,
+      "significante": true
+    },
+    "vs_num_reviews": {
+      "r": 0.64,
+      "p": 0.0,
+      "significante": true
+    }
+  }
+}
