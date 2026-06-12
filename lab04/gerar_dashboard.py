@@ -25,36 +25,141 @@ if 'author_is_bot' in df.columns:
 df = df.dropna(subset=['first_review_latency_hours', 'core_peripheral'])
 
 # Paleta de cores oficial do dashboard para destacar os 2 grupos principais
-color_map = {'Core': '#27ae60', 'Peripheral': '#c0392b'}
+df['Perfil_Autor'] = df['core_peripheral'].map({
+    'Core': 'Central',
+    'Peripheral': 'Periférico'
+})
+color_map = {'Central': '#27ae60', 'Periférico': '#c0392b'}
+rotulos_graficos = {
+    'language': 'Linguagem',
+    'Perfil_Autor': 'Perfil do Autor',
+    'first_review_latency_hours': 'Latência até 1ª Revisão (horas)',
+    'Assimetria_Centralidade': 'Assimetria de Centralidade'
+}
+
+def estilizar_grafico(fig):
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#243447", family="Segoe UI Variable Text, Inter, Segoe UI, Arial, sans-serif"),
+        title_font=dict(color="#1f2d3d", size=18, family="Segoe UI Variable Display, Inter, Segoe UI, Arial, sans-serif"),
+        margin=dict(t=65, b=50, l=55, r=35),
+        legend=dict(
+            bgcolor="rgba(255,255,255,0)",
+            borderwidth=0
+        ),
+        hoverlabel=dict(
+            bgcolor="#1f2d3d",
+            font_color="white"
+        )
+    )
+    fig.update_xaxes(gridcolor="#edf2f7", zerolinecolor="#d9e2ec", linecolor="#d9e2ec")
+    fig.update_yaxes(gridcolor="#edf2f7", zerolinecolor="#d9e2ec", linecolor="#d9e2ec")
+    return fig
+
+def preencher_boxplot(fig):
+    cores = {
+        'Central': ('rgba(39, 174, 96, 0.72)', '#145a32'),
+        'Periférico': ('rgba(192, 57, 43, 0.68)', '#7b241c')
+    }
+    for trace in fig.data:
+        preenchimento, linha = cores.get(trace.name, ('rgba(52, 152, 219, 0.65)', '#1b4f72'))
+        trace.update(
+            fillcolor=preenchimento,
+            line=dict(color=linha, width=3),
+            marker=dict(color=linha, opacity=0.55, size=4),
+            whiskerwidth=0.7
+        )
+    return fig
+
+def destacar_quartis_boxplot(fig, dados, coluna_grupo, coluna_valor):
+    estatisticas = dados.groupby(coluna_grupo, observed=True)[coluna_valor].quantile([0.25, 0.5, 0.75]).unstack()
+    for grupo, linha in estatisticas.iterrows():
+        q1 = linha.get(0.25)
+        mediana = linha.get(0.5)
+        q3 = linha.get(0.75)
+        if pd.isna(q1) or pd.isna(mediana) or pd.isna(q3):
+            continue
+        fig.add_annotation(
+            x=grupo,
+            y=mediana,
+            text=f"Q1 {q1:.2f}h<br><b>Mediana {mediana:.2f}h</b><br>Q3 {q3:.2f}h",
+            showarrow=False,
+            font=dict(color="white", size=12, family="Segoe UI Variable Display, Inter, Segoe UI, sans-serif"),
+            align="center",
+            bgcolor="rgba(31, 45, 61, 0.90)",
+            bordercolor="rgba(255, 255, 255, 0.90)",
+            borderwidth=1,
+            borderpad=6
+        )
+    return fig
+
+def traduzir_hover_boxplot(fig):
+    fig.update_traces(
+        hovertemplate=(
+            "Perfil do Autor: %{x}<br>"
+            "Latência até 1ª Revisão: %{y:.2f}h"
+            "<extra></extra>"
+        )
+    )
+    return fig
+
+def traduzir_hover_barras(fig, eixo_x, eixo_y):
+    fig.update_traces(
+        hovertemplate=(
+            f"{eixo_x}: " + "%{x}<br>"
+            f"{eixo_y}: " + "%{y:.2f}h"
+            "<extra></extra>"
+        )
+    )
+    return fig
 
 print("Gerando gráficos interativos com Plotly...")
 
 # --- CALCULOS DE KPI ---
 total_prs = len(df)
 median_latency = df['first_review_latency_hours'].median()
-avg_latency = df['first_review_latency_hours'].mean()
+median_merge = df['time_to_merge_hours'].median() if 'time_to_merge_hours' in df.columns else 0
 total_repos = df['repository'].nunique()
 
 # --- GRAFICO 1: Distribuição Geral ---
 fig_lang = px.pie(df, names='language', title='Distribuição de Pull Requests por Linguagem', 
-                  hole=0.4, color_discrete_sequence=px.colors.qualitative.Prism)
+                  hole=0.4, color_discrete_sequence=px.colors.qualitative.Prism,
+                  labels=rotulos_graficos)
 fig_lang.update_layout(margin=dict(t=50, b=20, l=10, r=10))
+estilizar_grafico(fig_lang)
 
-# --- GRAFICO 2: Violino/Boxplot Core vs Peripheral (Escala Log) ---
-fig_core_per = px.box(df, x='core_peripheral', y='first_review_latency_hours', color='core_peripheral',
-                      title='Latência de Revisão: Core vs Peripheral (Escala Log - Cauda Longa)',
-                      color_discrete_map=color_map, log_y=True)
-fig_core_per.update_layout(yaxis_title='Latência (Horas)', xaxis_title='Perfil Social do Autor', showlegend=False, 
-                           margin=dict(t=50, b=20, l=10, r=10))
+# --- GRAFICO 2: Boxplot Core vs Peripheral (Escala Log) ---
+fig_core_per = px.box(df, x='Perfil_Autor', y='first_review_latency_hours', color='Perfil_Autor',
+                      title='Boxplot de Latência por Perfil do Autor (Q1, Mediana, Q3 e Outliers)',
+                      points='outliers',
+                      color_discrete_map=color_map, log_y=True,
+                      labels=rotulos_graficos)
+fig_core_per.update_traces(
+    quartilemethod="exclusive",
+    boxpoints='outliers',
+    marker_outliercolor='rgba(31, 45, 61, 0.78)',
+    marker_line_outliercolor='rgba(31, 45, 61, 0.95)',
+    marker_line_outlierwidth=1
+)
+preencher_boxplot(fig_core_per)
+destacar_quartis_boxplot(fig_core_per, df, 'Perfil_Autor', 'first_review_latency_hours')
+traduzir_hover_boxplot(fig_core_per)
+fig_core_per.update_layout(yaxis_title='Horas até a 1ª Revisão (Log)', xaxis_title='Perfil Social do Autor',
+                           showlegend=False, margin=dict(t=50, b=20, l=10, r=10))
+estilizar_grafico(fig_core_per)
 
 # --- GRAFICO 3: Impacto por Ecossistema ---
 # Agregar as medianas por linguagem antes de jogar no bar chart
-df_med_lang = df.groupby(['language', 'core_peripheral'])['first_review_latency_hours'].median().reset_index()
-fig_lang_comp = px.bar(df_med_lang, x='language', y='first_review_latency_hours', color='core_peripheral', 
+df_med_lang = df.groupby(['language', 'Perfil_Autor'])['first_review_latency_hours'].median().reset_index()
+fig_lang_comp = px.bar(df_med_lang, x='language', y='first_review_latency_hours', color='Perfil_Autor', 
                        barmode='group', text_auto='.2f', color_discrete_map=color_map,
-                       title='Latência Mediana (Horas) por Linguagem: Comportamento Transversal')
+                       title='Latência Mediana (Horas) por Linguagem: Comportamento Transversal',
+                       labels=rotulos_graficos)
 fig_lang_comp.update_layout(yaxis_title='Mediana de Espera até 1ª Revisão (Horas)', xaxis_title='Linguagem', 
                             legend_title='Categoria do Autor', margin=dict(t=50, b=20, l=10, r=10))
+traduzir_hover_barras(fig_lang_comp, "Linguagem", "Latência Mediana")
+estilizar_grafico(fig_lang_comp)
 
 # --- GRAFICO 4: Assimetria (Dinâmica Pessoal Revisor vs Autor) ---
 def classificar_assimetria(val):
@@ -63,20 +168,23 @@ def classificar_assimetria(val):
     elif val < -0.1: return 'Bottom-Up (Autor muito mais influente)'
     else: return 'Neutra (Mesmo Patamar)'
     
-df['Status_Relativo'] = df['centrality_asymmetry'].apply(classificar_assimetria)
-df_asym = df[df['Status_Relativo'] != 'Indefinido']
-df_med_asym = df_asym.groupby('Status_Relativo')['first_review_latency_hours'].median().reset_index()
+df['Assimetria_Centralidade'] = df['centrality_asymmetry'].apply(classificar_assimetria)
+df_asym = df[df['Assimetria_Centralidade'] != 'Indefinido']
+df_med_asym = df_asym.groupby('Assimetria_Centralidade')['first_review_latency_hours'].median().reset_index()
 
 # Ordenar logicamente as opções
-df_med_asym['ordem'] = df_med_asym['Status_Relativo'].map(
+df_med_asym['ordem'] = df_med_asym['Assimetria_Centralidade'].map(
     {"Top-Down (Revisor muito mais influente)": 3, "Neutra (Mesmo Patamar)": 2, "Bottom-Up (Autor muito mais influente)": 1})
 df_med_asym = df_med_asym.sort_values('ordem')
 
-fig_asym = px.bar(df_med_asym, x='Status_Relativo', y='first_review_latency_hours', color='Status_Relativo', 
+fig_asym = px.bar(df_med_asym, x='Assimetria_Centralidade', y='first_review_latency_hours', color='Assimetria_Centralidade', 
                   text_auto='.2f', title='Efeito da Assimetria Top-Down (Revisor Central joga latência para cima)',
-                  color_discrete_sequence=['#2980b9', '#f39c12', '#8e44ad'])
+                  color_discrete_sequence=['#2980b9', '#f39c12', '#8e44ad'],
+                  labels=rotulos_graficos)
 fig_asym.update_layout(yaxis_title='Latência Mediana (Horas)', xaxis_title='Dinâmica de Centralidade Revisor-Autor', 
                        showlegend=False, margin=dict(t=50, b=20, l=10, r=10))
+traduzir_hover_barras(fig_asym, "Assimetria de Centralidade", "Latência Mediana")
+estilizar_grafico(fig_asym)
 
 print("Montando o esqueleto HTML do Dashboard...")
 
@@ -103,7 +211,7 @@ html_template = f"""
             --rad: 12px;
         }}
         body {{
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI Variable Text', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
@@ -117,13 +225,15 @@ html_template = f"""
             display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 40px; justify-content: space-between;
         }}
         .kpi-card {{
+            font-family: 'Segoe UI Variable Display', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             flex: 1; min-width: 180px; background-color: var(--card-bg); border-radius: var(--rad); 
-            padding: 25px 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.03); 
+            min-height: 146px; padding: 24px 20px; text-align: center; box-shadow: 0 12px 26px rgba(31,45,61,0.12); 
             border: 1px solid var(--border); transition: transform 0.2s;
+            display: flex; flex-direction: column; justify-content: center;
         }}
         .kpi-card:hover {{ transform: translateY(-5px); }}
-        .kpi-card h3 {{ margin: 0; color: #95a5a6; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; }}
-        .kpi-value {{ margin: 15px 0 0 0; font-size: 2.5em; font-weight: 700; color: var(--primary); }}
+        .kpi-card h3 {{ margin: 0; color: #5f7180; font-family: 'Segoe UI Variable Text', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 1.04em; font-weight: 850; text-transform: uppercase; letter-spacing: 0.7px; line-height: 1.18; }}
+        .kpi-value {{ display: inline-block; min-width: 118px; margin: 12px auto 0 auto; padding: 8px 14px 9px 14px; border-radius: 9px; background: rgba(10,18,32,0.09); border: 1px solid rgba(52,70,92,0.10); box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 10px 22px rgba(31,45,61,0.08); font-family: 'Segoe UI Variable Display', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 3.45em; line-height: 0.95; font-weight: 950; letter-spacing: -1px; color: #155f9c; text-shadow: 0 3px 10px rgba(52,152,219,0.18); }}
         
         .grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }}
         .chart-card {{ 
@@ -143,10 +253,10 @@ html_template = f"""
     </div>
 
     <div class="kpi-container">
-        <div class="kpi-card"><h3>Total de Requiçiões Mapeadas</h3><p class="kpi-value">{total_prs:,}</p></div>
-        <div class="kpi-card"><h3>Latência Mediana (Geral)</h3><p class="kpi-value">{median_latency:.2f}h</p></div>
-        <div class="kpi-card"><h3>Latência Média (Geral)</h3><p class="kpi-value">{avg_latency:.2f}h</p></div>
-        <div class="kpi-card"><h3>Projetos / Repositórios</h3><p class="kpi-value">{total_repos:,}</p></div>
+        <div class="kpi-card"><h3>📊 Total de Requisições Mapeadas</h3><p class="kpi-value">{total_prs:,}</p></div>
+        <div class="kpi-card"><h3>⏱️ Latência Mediana (Geral)</h3><p class="kpi-value">{median_latency:.2f}h</p></div>
+        <div class="kpi-card"><h3>🔀 Tempo de Merge</h3><p class="kpi-value">{median_merge:.2f}h</p></div>
+        <div class="kpi-card"><h3>🏢 Projetos / Repositórios</h3><p class="kpi-value">{total_repos:,}</p></div>
     </div>
 
     <div class="grid">
@@ -155,7 +265,7 @@ html_template = f"""
             {fig_lang.to_html(full_html=False, include_plotlyjs=False)}
         </div>
         <div class="chart-card">
-            <p class="desc-text">Como os dados são muito assimétricos (cauda longa com valores imensos), o eixo Y logarítmico revela melhor onde a massa dos dados se encontra. Autores <b>Core</b> tem boxplots expressivamente mais "baixos".</p>
+            <p class="desc-text">O boxplot mostra Q1, mediana, Q3 e outliers. A linha sólida dentro da caixa é a <b>mediana</b>; a caixa preenchida vai de Q1 a Q3.</p>
             {fig_core_per.to_html(full_html=False, include_plotlyjs=False)}
         </div>
         
@@ -179,4 +289,4 @@ html_template = f"""
 with open('dashboard_interativo.html', 'w', encoding='utf-8') as f:
     f.write(html_template)
 
-print("✅ SUCESSO! Dashboard gerado perfeitamente no arquivo: 'dashboard_interativo.html'")
+print("SUCESSO! Dashboard gerado perfeitamente no arquivo: 'dashboard_interativo.html'")
