@@ -248,15 +248,15 @@ html_template = f"""
 </head>
 <body>
     <div class="header">
-        <h1>Dashboard Sociotécnico: Processo de Code Review 🔍</h1>
+        <h1>Dashboard Sociotécnico: Processo de Code Review</h1>
         <p>A influência da posição social do desenvolvedor na latência das avaliações (GitHub)</p>
     </div>
 
     <div class="kpi-container">
-        <div class="kpi-card"><h3>📊 Total de Requisições Mapeadas</h3><p class="kpi-value">{total_prs:,}</p></div>
-        <div class="kpi-card"><h3>⏱️ Latência Mediana (Geral)</h3><p class="kpi-value">{median_latency:.2f}h</p></div>
-        <div class="kpi-card"><h3>🔀 Tempo de Merge</h3><p class="kpi-value">{median_merge:.2f}h</p></div>
-        <div class="kpi-card"><h3>🏢 Projetos / Repositórios</h3><p class="kpi-value">{total_repos:,}</p></div>
+        <div class="kpi-card"><h3>Total de Requisições Mapeadas</h3><p class="kpi-value">{total_prs:,}</p></div>
+        <div class="kpi-card"><h3>Latência Mediana (Geral)</h3><p class="kpi-value">{median_latency:.2f}h</p></div>
+        <div class="kpi-card"><h3>Tempo de Merge</h3><p class="kpi-value">{median_merge:.2f}h</p></div>
+        <div class="kpi-card"><h3>Projetos / Repositórios</h3><p class="kpi-value">{total_repos:,}</p></div>
     </div>
 
     <div class="grid">

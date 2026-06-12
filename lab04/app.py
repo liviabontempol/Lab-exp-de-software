@@ -263,11 +263,11 @@ def mostrar_kpi(coluna, titulo, valor, gradiente, unidade=""):
         </div>
         """, unsafe_allow_html=True)
 
-mostrar_kpi(col1, "📊 Total de PRs", f"{kpi_1:,}", "linear-gradient(135deg, #667eea 0%, #764ba2 100%)")
-mostrar_kpi(col2, "⏱️ Latência 1ª Revisão", f"{kpi_2:.2f}h", "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)")
-mostrar_kpi(col3, "🔀 Tempo de Merge", f"{kpi_3:.2f}h", "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)")
-mostrar_kpi(col4, "📝 Tamanho Mediano", f"{kpi_4:.0f}", "linear-gradient(135deg, #fa709a 0%, #fee140 100%)", "linhas")
-mostrar_kpi(col5, "🏢 Repositórios", f"{kpi_5:,}", "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)")
+mostrar_kpi(col1, "Total de PRs", f"{kpi_1:,}", "linear-gradient(135deg, #667eea 0%, #764ba2 100%)")
+mostrar_kpi(col2, "Latência 1ª Revisão", f"{kpi_2:.2f}h", "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)")
+mostrar_kpi(col3, "Tempo de Merge", f"{kpi_3:.2f}h", "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)")
+mostrar_kpi(col4, "Tamanho Mediano", f"{kpi_4:.0f}", "linear-gradient(135deg, #fa709a 0%, #fee140 100%)", "linhas")
+mostrar_kpi(col5, "Repositórios", f"{kpi_5:,}", "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)")
 
 st.markdown("---")
 
