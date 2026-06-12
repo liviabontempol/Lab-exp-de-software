@@ -498,7 +498,7 @@ with tab_rq3:
     col_rq3_1, col_rq3_2 = st.columns(2)
     with col_rq3_1:
         st.subheader("O Peso da Assimetria Top-Down")
-        st.markdown("Revisões do tipo *Top-Down* (Revisor Central inspecionando autor Periférico) demoram significativamente mais. Quando os *peers* têm centralidades equiparáveis (Neutra/Bottom-Up), a análise é acelerada.")
+        st.markdown("Este gráfico compara a **mediana de horas até a primeira revisão** de acordo com a diferença de centralidade entre autor e revisor.")
         
         df_asym = df_filtrado[df_filtrado['Status_Relativo'] != 'Indefinido']
         df_med_asym = df_asym.groupby('Assimetria_Centralidade', observed=True)['first_review_latency_hours'].median().reset_index()
@@ -510,27 +510,31 @@ with tab_rq3:
         fig_bar2 = px.bar(df_med_asym, x='Assimetria_Centralidade', y='first_review_latency_hours', 
                           color='Assimetria_Centralidade', text_auto='.2f',
                           color_discrete_sequence=['#2980b9', '#f39c12', '#8e44ad'],
+                          title="Latência mediana por assimetria de centralidade",
                           labels=rotulos_graficos)
         fig_bar2.update_layout(yaxis_title="Latência Mediana (Horas)", xaxis_title="", showlegend=False)
         traduzir_hover_barras(fig_bar2, "Assimetria de Centralidade", "Latência Mediana")
         estilizar_grafico(fig_bar2)
         st.plotly_chart(fig_bar2, use_container_width=True)
+        st.caption("Leitura: barras mais altas indicam revisões mais lentas. Quando o revisor é mais central que o autor, a espera tende a aumentar.")
         
     with col_rq3_2:
         st.subheader("Experiência prévia: A Frequência Preditiva")
-        st.markdown("A métrica mais forte atrelada puramente ao autor para derrubar o tempo de revisão é o quão freneticamente ele atua naquele repositório. Observe a clara curva de Regressão Linear desabando no quadro (Amostragem).")
+        st.markdown("Este gráfico cruza a **frequência prévia de contribuição do autor** com o **tempo até a primeira revisão**, separando autores centrais e periféricos.")
         
         # Reduzida a amostragem pra 2500 pra aliviar o OLS e evitar fragmentação do motor Numba
         df_sample = df_filtrado.sample(min(len(df_filtrado), 2500), random_state=42)
         fig_scatter = px.scatter(df_sample, x='author_frequency', y='first_review_latency_hours', 
                                  color='Perfil_Autor', color_discrete_map=color_map,
                                  opacity=0.5, log_y=True, log_x=True, trendline="ols",
+                                 title="Frequência do autor vs tempo de revisão",
                                  labels=rotulos_graficos)
         fig_scatter.update_traces(marker=dict(size=4))
         fig_scatter.update_layout(yaxis_title="Tempo de Revisão (Escala Log Y)", xaxis_title="Frequência (Escala Log X)")
         traduzir_hover_pontos_linhas(fig_scatter, "Frequência prévia do autor", "Tempo de Revisão")
         estilizar_grafico(fig_scatter)
         st.plotly_chart(fig_scatter, use_container_width=True)
+        st.caption("Leitura: cada ponto é um PR. A linha de tendência mostra se autores mais frequentes costumam receber revisão mais rápido.")
 
 # ================= ABA 5: CONTROLE (EXTRAS) =================
 with tab_extras:
@@ -541,31 +545,36 @@ with tab_extras:
     
     with col_ex1:
         st.subheader("O 'Efeito Final de Semana'")
+        st.markdown("Este gráfico compara a latência mediana entre PRs enviados em **dias úteis** e em **finais de semana**, separando autores centrais e periféricos.")
         if 'Dia_da_Semana' in df_filtrado.columns:
             df_weekend = df_filtrado.groupby(['Dia_da_Semana', 'Perfil_Autor'], observed=True)['first_review_latency_hours'].median().reset_index()
             fig_weekend = px.bar(df_weekend, x='Dia_da_Semana', y='first_review_latency_hours', 
                                  color='Perfil_Autor', barmode='group', text_auto='.2f',
                                  color_discrete_map=color_map,
+                                 title="Latência mediana por dia de envio",
                                  labels=rotulos_graficos)
             fig_weekend.update_layout(yaxis_title="Latência Mediana (Horas)", xaxis_title="Dia de Envio")
             traduzir_hover_barras(fig_weekend, "Dia de Envio", "Latência Mediana")
             estilizar_grafico(fig_weekend)
             st.plotly_chart(fig_weekend, use_container_width=True)
+            st.caption("Leitura: compare as barras por perfil para ver se o fim de semana aumenta a espera e se a diferença entre autores centrais e periféricos permanece.")
             st.info("PRs submetidos nos finais de semana sofrem uma penalidade de tempo considerável para ambos os grupos, porém as proporções do *privilégio Central* continuam quase idênticas perante seus pares.")
         else:
             st.warning("Variável de Final de Semana não mapeada perfeitamente na amostra atual.")
             
     with col_ex2:
         st.subheader("O Paradoxo do Tamanho do PR (Linhas Alteradas)")
-        st.markdown("Mesmo com PRs enormes, o autor Central fura a fila.")
+        st.markdown("Este gráfico verifica se PRs maiores, medidos por **linhas de código alteradas**, explicam sozinhos o tempo de revisão.")
         
         df_sample_loc = df_filtrado.sample(min(len(df_filtrado), 2500), random_state=42)
         fig_loc = px.scatter(df_sample_loc, x='loc_changed', y='first_review_latency_hours', 
                              color='Perfil_Autor', color_discrete_map=color_map,
                              opacity=0.4, log_y=True, log_x=True, trendline="ols",
+                             title="Tamanho do PR vs tempo de revisão",
                              labels=rotulos_graficos)
         fig_loc.update_traces(marker=dict(size=4))
         fig_loc.update_layout(yaxis_title="Tempo de Revisão (Log)", xaxis_title="Linhas de Código Alteradas (Log)")
         traduzir_hover_pontos_linhas(fig_loc, "Linhas de Código Alteradas", "Tempo de Revisão")
         estilizar_grafico(fig_loc)
         st.plotly_chart(fig_loc, use_container_width=True)
+        st.caption("Leitura: cada ponto é um PR. A linha de tendência ajuda a comparar se o tamanho do PR afeta igualmente autores centrais e periféricos.")
